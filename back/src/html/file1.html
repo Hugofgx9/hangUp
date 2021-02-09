@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<title></title>
+</head>
+<body>
+	<h1>File1</h1>
+	<button> Timer </button>
+
+</body>
+<script src="/socket.io/socket.io.js"></script>
+<script type="text/javascript">
+	let socket = io();
+
+	let index = 0;
+	let time1 = null;
+	document.querySelector('button').addEventListener('click',() => {
+
+		if (time1 == null ) {
+			time1 = Date.now();
+		}
+		else {
+			let time2 = Date.now();
+			let gap = time2 - time1;
+			socket.emit('gap', gap);
+			time1 = null;
+		}
+	});
+
+	let h1 = document.querySelector('h1');
+
+	socket.on('gap', (r) => {
+		h1.textContent = r.gap;
+	});
+
+	socket.on('canplay', (e) => {
+		console.log(e)
+	});
+
+
+</script>
+</html>
