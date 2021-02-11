@@ -12,6 +12,8 @@ export default function socker(server) {
 	io.on('connection', (socket) => {
 		console.log('user connected');
 
+    socket.emit('connected');
+
 
 		room.addUser(socket);
 

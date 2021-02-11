@@ -1,56 +1,89 @@
 import React from 'react';
 import { StyleSheet, Text, TouchableOpacity, Button, View, Vibration } from 'react-native';
 import { Accelerometer } from 'expo-sensors';
+import { io } from 'socket.io-client';
 
 export default class accelero extends React.Component {
 
-  state = {
-    string: 'hello',
-  };
+	state = {
+		string: '',
+	};
 
-  onPress() {
-  	this.date1 = Date.now();
-  }
+	onPress() {
+		this.socket.emit ('player-ready');
+	}
 
-  startGame() {
-  	Vibration.vibrate();
-  	this.date1 = Date.now();
-  	this.gameIN = true;
-  }
+	startGame() {
+		this.date1 = Date.now();
+		this.gameIN = true;
+	}
 
-  componentWillUnmount() {
-    this._unsubscribeFromAccelerometer();
-  }
+	componentWillUnmount() {
+		this._unsubscribeFromAccelerometer();
+	}
 
-  componentDidMount() {
-  	this.date1 = 0;
-  	this.startGame();
-  	this._subscribeToAccelerometer();
-  }
+	componentDidMount() {
+		this.date1 = 0;
+		this.startGame();
+		this._subscribeToAccelerometer();
+		this.socketConnect();
+	}
 
-  _subscribeToAccelerometer() {
+	socketConnect() {
+		this.socket = io('ws://192.168.0.12:3000');
+		this.bindSocket();
+	}
 
-  	let value;
-  	let prevValue;
-    this._accelerometerSubscription = Accelerometer.addListener( a => {
+	bindSocket() {  
+		const socket = this.socket;
 
-    	let value = Math.abs(a.x + a.y + a.z);
+		socket.on('connected', () => console.log('connected on socket'));
 
-    	if (prevValue && this.gameIN == true && Math.abs(value - prevValue) > 0.2) {
-    		let gap = Date.now() - this.date1; 
-    		this.setState({
-    			string: gap,
-    		});
-    		this.gameIN = false;
-    	}
-    	prevValue = value;
-    });
-  };
+		socket.on('game-ready', () => console.log('game-ready'));
 
-  _unsubscribeFromAccelerometer = () => {
-    if (this._accelerometerSubscription != undefined) this._acceleroMeterSubscription.remove();
-    //this._accelerometerSubscription = null;
-  };
+		socket.on('game-start', delay => {
+			console.log('delay', delay);
+			setTimeout( () => {
+				Vibration.vibrate();
+				this.date1 = Date.now();
+				console.log('vibre');
+
+			}, delay);
+		})
+
+		socket.on('result', result => {
+			console.log(`winner: ${result.winner}, rank:  ${result.rank}`)
+		});
+	}
+
+	_subscribeToAccelerometer() {
+
+		let value;
+		let prevValue;
+
+		Accelerometer.isAvailableAsync()
+		.then(
+			result => {
+				Accelerometer.addListener( a => {
+					let value = Math.abs(a.x + a.y + a.z);
+
+					if (prevValue && this.gameIN == true && Math.abs(value - prevValue) > 0.2) {
+						let gap = Date.now() - this.date1; 
+						this.setState({
+							string: gap,
+						});
+						this.socket.emit('result', gap);
+						this.gameIN = false;
+					}
+					prevValue = value;
+				});
+			}, error => console.log('Accelerometer dont work')
+		)
+	};
+
+	_unsubscribeFromAccelerometer() {
+		Accelerometer.removeAllListeners();
+	};
 
 	render () {
 		return (
@@ -86,12 +119,9 @@ const styles = StyleSheet.create({
 		justifyContent: 'center',
 		paddingHorizontal: 10,
 	},
-
-	coucou: {
-			color: '#1c1c1c'
-	},
 	text: {
 		textAlign: 'center',
+		fontSize: 50,
 	},
 	buttonContainer: {
 		flexDirection: 'row',
