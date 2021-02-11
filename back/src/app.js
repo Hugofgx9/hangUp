@@ -3,13 +3,11 @@ import http from 'http';
 import path from 'path';
 import socker from './socket/socker.js';
 //import routes from './routes';
-import * as cors from 'cors';
+import cors from 'cors';
 
 import env from './env.js';
 
-const app = express( cors{
-	origin: ['http://localhost:3000']
-});
+const app = express( cors() );
 const server = http.Server(app);
 socker(server);
 
