@@ -18,11 +18,9 @@ const App = () => {
       : "wait 1s, vibrate, wait 2s, vibrate, wait 3s";
 
   return (
-    <SafeAreaView style={styles.container}>
       <View>
         <Button title="Vibrate once" onPress={() => Vibration.vibrate()} />
       </View>
-    </SafeAreaView>
   );
 }
 
@@ -30,7 +28,6 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     justifyContent: "center",
-    paddingTop: 44,
     padding: 8
   },
   header: {
