@@ -2,12 +2,13 @@ import React, { useState, useEffect } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import { Gyroscope, Accelerometer } from 'expo-sensors';
 
+
 export default function App() {
   const [data, setData] = useState({
     x: 0,
     y: 0,
     z: 0,
-});
+  });
 
   const [subscription, setSubscription] = useState(null);
   const [bgColor, setColor] = useState('white');
@@ -30,6 +31,8 @@ export default function App() {
     setSubscription(null);
   };
 
+ 
+
   useEffect(() => {
     _subscribe();
     return () => _unsubscribe();
@@ -42,8 +45,7 @@ export default function App() {
       <Text style={styles.text}>
         y: {round(y)}
       </Text>
-      <View style={styles.buttonContainer}>
-      </View>
+      <View style={styles.buttonContainer}></View>
     </View>
   );
 }
@@ -58,28 +60,27 @@ function round(n) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: 'center',
+    justifyContent: "center",
     paddingHorizontal: 10,
   },
   text: {
-    fontSize: 50,
-    textAlign: 'center',
+    textAlign: "center",
   },
   buttonContainer: {
-    flexDirection: 'row',
-    alignItems: 'stretch',
+    flexDirection: "row",
+    alignItems: "stretch",
     marginTop: 15,
   },
   button: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: '#eee',
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "#eee",
     padding: 10,
   },
   middleButton: {
     borderLeftWidth: 1,
     borderRightWidth: 1,
-    borderColor: '#ccc',
+    borderColor: "#ccc",
   },
 });
