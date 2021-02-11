@@ -1,0 +1,24 @@
+{
+  "name": "hang_up",
+  "version": "1.0.0",
+  "description": "",
+  "dependencies": {
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "(cd back && npm run start) & (cd reactNative && npm run start)",
+    "dep": "(cd back && npm i) & (cd reactNative && npm i)"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Hugofgx9/hangUp.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Hugofgx9/hangUp/issues"
+  },
+  "homepage": "https://github.com/Hugofgx9/hangUp#readme"
+}
