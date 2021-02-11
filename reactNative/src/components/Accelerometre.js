@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
-import { Accelerometer } from 'expo-sensors';
+import { Gyroscope, Accelerometer } from 'expo-sensors';
 
 export default function App() {
   const [data, setData] = useState({
@@ -10,10 +10,16 @@ export default function App() {
 });
 
   const [subscription, setSubscription] = useState(null);
+  const [bgColor, setColor] = useState('white');
 
   const _subscribe = () => {
     setSubscription(
-      Accelerometer.addListener(accelerometerData => {
+      Gyroscope.addListener(accelerometerData => {
+        if (accelerometerData.x + accelerometerData.y + accelerometerData.z > 0.7) {
+          setColor('green');
+        } else {
+          setColor('white');
+        }
         setData(accelerometerData);
       })
     );
@@ -31,10 +37,10 @@ export default function App() {
 
   const { x, y, z } = data;
   return (
-    <View style={styles.container}>
-      <Text style={styles.text}>Accelerometer: (in Gs where 1 G = 9.81 m s^-2)</Text>
+    <View style={[styles.container, {backgroundColor: bgColor}]}>
+      {/*<Text style={styles.text}>Accelerometer: (in Gs where 1 G = 9.81 m s^-2)</Text>*/}
       <Text style={styles.text}>
-        x: {round(x)} y: {round(y)} z: {round(z)}
+        y: {round(y)}
       </Text>
       <View style={styles.buttonContainer}>
       </View>
@@ -46,7 +52,7 @@ function round(n) {
   if (!n) {
     return 0;
   }
-  return Math.floor(n * 100) / 100;
+  return Math.floor(n * 100) / 1;
 }
 
 const styles = StyleSheet.create({
@@ -56,6 +62,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
   },
   text: {
+    fontSize: 50,
     textAlign: 'center',
   },
   buttonContainer: {

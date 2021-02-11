@@ -6,36 +6,41 @@
 </head>
 <body>
 	<h1>File1</h1>
-	<button> Timer </button>
+	<button class='ready'> Ready </button>
+	<button class='send'> Send </button>
+	<div class='vibre' style=""> Vibre </div>
 
 </body>
 <script src="/socket.io/socket.io.js"></script>
 <script type="text/javascript">
-	let socket = io();
+	let socket = io('localhost:3000');
 
-	let index = 0;
-	let time1 = null;
-	document.querySelector('button').addEventListener('click',() => {
+	let time1 = 0;
 
-		if (time1 == null ) {
+
+	socket.on('game-ready', () => console.log('gametart'));
+
+	document.querySelector('button.ready').addEventListener('click',() => {
+		socket.emit('player-ready');
+	});
+
+	socket.on('game-start', delay => {
+		console.log('delay', delay);
+		setTimeout( () => {
+			document.querySelector('.vibre').style.backgroundColor = 'green';
+			console.log('vibre');
 			time1 = Date.now();
-		}
-		else {
-			let time2 = Date.now();
-			let gap = time2 - time1;
-			socket.emit('gap', gap);
-			time1 = null;
-		}
+
+		}, delay);
+	})
+
+	document.querySelector('button.send').addEventListener('click',() => {
+		let delay = Date.now() - time1;
+		socket.emit('result', delay);
 	});
 
-	let h1 = document.querySelector('h1');
-
-	socket.on('gap', (r) => {
-		h1.textContent = r.gap;
-	});
-
-	socket.on('canplay', (e) => {
-		console.log(e)
+	socket.on('result', result => {
+		console.log(`winner: ${result.winner}, rank:  ${result.rank}`)
 	});
 
 
