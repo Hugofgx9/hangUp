@@ -1,3 +1,5 @@
+// this is not the current use file, check roomManager2.js
+
 export default class Room {
 	constructor(opts = { io }) {
 		this.io = opts.io;;

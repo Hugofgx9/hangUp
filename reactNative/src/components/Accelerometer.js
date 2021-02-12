@@ -33,9 +33,11 @@ export default class accelero extends React.Component {
 		this.socket.emit ('player-ready');
 	}
 
-	startGame() {
+	startVibration() {
 		this.date1 = Date.now();
 		this.setState({ gameState: 1});
+		this.setConsole('vibre');
+		Vibration.vibrate();
 	}
 
 	socketConnect() {
@@ -55,11 +57,9 @@ export default class accelero extends React.Component {
 		
 		// game start
 		socket.on('game-start', delay => {
+			this.setConsole('GAME START');
 			setTimeout( () => {
-				Vibration.vibrate();
-				this.startGame();
-				this.setConsole('vibre');
-
+				this.startVibration();
 			}, delay);
 		})
 
