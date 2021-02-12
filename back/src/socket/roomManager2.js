@@ -111,7 +111,7 @@ export default class Room {
 		})
 		setTimeout( () => {
 			this.init();
-		}, 3w000);
+		}, 3000);
 	}
 
 	/**
