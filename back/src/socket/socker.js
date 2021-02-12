@@ -7,8 +7,6 @@ export default function socker(server) {
 
 	let room = new Room({io: io});
 
-
-
 	io.on('connection', (socket) => {
 		console.log('user connected');
 

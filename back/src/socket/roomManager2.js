@@ -10,11 +10,14 @@ export default class Room {
 	}
 
 	/**
-	 * Sends random delay [1 : 5]secs to players
+	 * Sends random delay [min : max]secs to players
 	 */
 	gameStart() {
 		console.log('game start');
-		let delay = 1 + Math.random() * 4 * 1000;
+		let min = 1;
+		let max = 5;
+		
+		let delay = min + Math.random() * (max - min) * 1000;
 		this.io.to(this.roomID).emit('game-start', delay);
 	}
 
