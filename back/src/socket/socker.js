@@ -1,5 +1,5 @@
 import { Server } from 'socket.io';
-import Room from './roomManager.js';
+import Room from './roomManager2.js';
 
 export default function socker(server) {
 
@@ -12,8 +12,15 @@ export default function socker(server) {
 	io.on('connection', (socket) => {
 		console.log('user connected');
 
+    socket.emit('connected');
+
 
 		room.addUser(socket);
+
+    socket.on('disconnect', socket => {
+      console.log('disconnet');
+      room.userDisconnect(socket);
+    })
 
 	});
 

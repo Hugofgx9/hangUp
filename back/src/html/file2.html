@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<title></title>
+</head>
+<body>
+	<h1>File1</h1>
+	<button class='ready'> Ready </button>
+	<button class='send'> Send </button>
+	<div class='vibre' style=""> Vibre </div>
+
+</body>
+<script src="/socket.io/socket.io.js"></script>
+<script type="text/javascript">
+	let socket = io('still-journey-49166.herokuapp.com');
+
+	let time1 = 0;
+
+
+	socket.on('game-ready', () => console.log('gametart'));
+
+	document.querySelector('button.ready').addEventListener('click',() => {
+		socket.emit('player-ready');
+	});
+
+	socket.on('game-start', delay => {
+		console.log('delay', delay);
+		setTimeout( () => {
+			document.querySelector('.vibre').style.backgroundColor = 'green';
+			console.log('vibre');
+			time1 = Date.now();
+
+		}, delay);
+	})
+
+	document.querySelector('button.send').addEventListener('click',() => {
+		let delay = Date.now() - time1;
+		socket.emit('result', delay);
+	});
+
+	socket.on('result', result => {
+		console.log(`winner: ${result.winner}, rank:  ${result.rank}`)
+	});
+
+
+</script>
+</html>

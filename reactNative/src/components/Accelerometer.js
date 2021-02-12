@@ -1,67 +1,110 @@
 import React from 'react';
 import { StyleSheet, Text, TouchableOpacity, Button, View, Vibration } from 'react-native';
 import { Accelerometer } from 'expo-sensors';
+import { io } from 'socket.io-client';
 
 export default class accelero extends React.Component {
 
-  state = {
-    string: 'hello',
-  };
+	state = {
+		string: '',
+		console: '',
+		gameState: 0,
+	};
 
-  onPress() {
-  	this.date1 = Date.now();
-  }
+	onPress() {
+		this.socket.emit ('player-ready');
+	}
 
-  startGame() {
-  	Vibration.vibrate();
-  	this.date1 = Date.now();
-  	this.gameIN = true;
-  }
+	startGame() {
+		this.date1 = Date.now();
+		this.setState({ gameState: 1});
+	}
 
-  componentWillUnmount() {
-    this._unsubscribeFromAccelerometer();
-  }
+	componentWillUnmount() {
+		this._unsubscribeFromAccelerometer();
+	}
 
-  componentDidMount() {
-  	this.date1 = 0;
-  	this.startGame();
-  	this._subscribeToAccelerometer();
-  }
+	componentDidMount() {
+		this.date1 = 0;
+		this.socketConnect();
+		this._subscribeToAccelerometer();
+	}
 
-  _subscribeToAccelerometer() {
+	socketConnect() {
+		this.socket = io('ws://192.168.0.12:3000');
+		//this.socket = io('ws://still-journey-49166.herokuapp.com');
+		this.bindSocket();
+	}
 
-  	let value;
-  	let prevValue;
-    this._accelerometerSubscription = Accelerometer.addListener( a => {
+	bindSocket() {  
+		const socket = this.socket;
 
-    	let value = Math.abs(a.x + a.y + a.z);
+		socket.on('connected', () => this.setConsole('connected on socket'));
+		
+		socket.on('game-start', delay => {
+			setTimeout( () => {
+				Vibration.vibrate();
+				this.startGame();
+				this.setConsole('vibre');
 
-    	if (prevValue && this.gameIN == true && Math.abs(value - prevValue) > 0.2) {
-    		let gap = Date.now() - this.date1; 
-    		this.setState({
-    			string: gap,
-    		});
-    		this.gameIN = false;
-    	}
-    	prevValue = value;
-    });
-  };
+			}, delay);
+		})
 
-  _unsubscribeFromAccelerometer = () => {
-    if (this._accelerometerSubscription != undefined) this._acceleroMeterSubscription.remove();
-    //this._accelerometerSubscription = null;
-  };
+		socket.on('result', result => {
+			this.setConsole(result.winner ? 'tu as gagné' : 'tu as perdu');
+		});
+
+		socket.on('can-play-again', () => {
+			this.setConsole('can-play-again');
+			this.setState({ gameState: 0});
+		}); 
+	}
+
+	setConsole(str) {
+		this.setState({
+			console: str,
+		});
+	}
+
+	_subscribeToAccelerometer() {
+
+		let value;
+		let prevValue;
+
+		Accelerometer.isAvailableAsync()
+		.then(
+			result => {
+				Accelerometer.addListener( a => {
+					let value = Math.abs(a.x + a.y + a.z);
+					if (prevValue && this.state.gameState == 1 && Math.abs(value - prevValue) > 0.2) {
+						let gap = Date.now() - this.date1; 
+						this.setState({string: gap, gameState: 2});
+						this.socket.emit('result', gap);
+					}
+					prevValue = value;
+				});
+			}, error => console.log('Accelerometer dont work')
+		)
+	};
+
+	_unsubscribeFromAccelerometer() {
+		Accelerometer.removeAllListeners();
+	};
 
 	render () {
 		return (
 			<View style={styles.container}>
 				<View srtle={styles.container} >
 					<Text style={styles.text}> 
-						{}
+						console: {this.state.console}
 					</Text>
-					<Button title="Press me" onPress={ () => this.onPress() } />
+
+					{ this.state.gameState == 0 && 
+						<Button title="Ready To Play" onPress={ () => this.onPress() } />
+					}
+
 					<Text style={styles.text}>
-						time: {this.state.string}
+						{this.state.string}
 				 </Text>
 				</View>
 			</View>
@@ -86,12 +129,9 @@ const styles = StyleSheet.create({
 		justifyContent: 'center',
 		paddingHorizontal: 10,
 	},
-
-	coucou: {
-			color: '#1c1c1c'
-	},
 	text: {
 		textAlign: 'center',
+		fontSize: 30,
 	},
 	buttonContainer: {
 		flexDirection: 'row',

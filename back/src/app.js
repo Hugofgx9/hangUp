@@ -15,7 +15,11 @@ socker(server);
 if (env.NODE_ENV == 'development') {
 	app.get('/', (req, res) => {
 		res.sendFile(path.resolve() + '/src/html/file1.html')
-	});	
+	});
+} else {
+	app.get('/', (req, res) => {
+		res.sendFile(path.resolve() + '/src/html/file2.html')
+	});
 }
 
 
