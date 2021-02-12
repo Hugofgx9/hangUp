@@ -15,34 +15,45 @@
 <script type="text/javascript">
 	let socket = io('localhost:3000');
 	let time1 = 0;
+	let $ready = document.querySelector('button.ready');
+	let $send = document.querySelector('button.send');
 
-	socket.on('game-ready', () => {
-		console.log('gametart')
-		document.querySelector('.vibre').style.backgroundColor = 'white';
-	});
-
-	document.querySelector('button.ready').addEventListener('click',() => {
-		socket.emit('player-ready');
-	});
+	$send.style.display = 'none';
 
 	socket.on('game-start', delay => {
 		console.log('delay', delay);
+		$send.style.display = 'block';
+		$ready.style.display = 'none';
+
 		setTimeout( () => {
+
 			document.querySelector('.vibre').style.backgroundColor = 'green';
 			console.log('vibre');
 			time1 = Date.now();
-
 		}, delay);
-	})
 
-	document.querySelector('button.send').addEventListener('click',() => {
-		let delay = Date.now() - time1;
-		socket.emit('result', delay);
-	});
+	})
 
 	socket.on('result', result => {
 		console.log(`winner: ${result.winner}, rank:  ${result.rank}`)
 	});
+
+	socket.on('can-play-again', () => {
+		console.log('can-play-again');
+		document.querySelector('.vibre').style.backgroundColor = 'none';
+		$ready.style.display = 'block';
+	});
+
+	$ready.addEventListener('click',() => {
+		socket.emit('player-ready');
+	});
+
+	$send.addEventListener('click',() => {
+		let delay = Date.now() - time1;
+		socket.emit('result', delay);
+		$send.style.display = 'none';
+	});
+
 
 
 </script>

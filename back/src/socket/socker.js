@@ -1,5 +1,5 @@
 import { Server } from 'socket.io';
-import Room from './roomManager.js';
+import Room from './roomManager2.js';
 
 export default function socker(server) {
 
