@@ -1,13 +1,14 @@
 import React from 'react';
-import { StyleSheet, Text, TouchableOpacity, Button, View, Vibration } from 'react-native';
+import { StyleSheet, Text, Image, TouchableOpacity, Button, View, Vibration } from 'react-native';
 import { Accelerometer } from 'expo-sensors';
 import { io } from 'socket.io-client';
+import Logo from '../../assets/image1.png';
 
 export default class accelero extends React.Component {
 
 	state = {
 		string: '',
-		console: '',
+		console: 'init',
 		gameState: 0,
 	};
 
@@ -31,8 +32,8 @@ export default class accelero extends React.Component {
 	}
 
 	socketConnect() {
-		this.socket = io('ws://192.168.0.12:3000');
-		//this.socket = io('ws://still-journey-49166.herokuapp.com');
+		//this.socket = io('ws://192.168.0.12:3000');
+		this.socket = io('ws://still-journey-49166.herokuapp.com');
 		this.bindSocket();
 	}
 
@@ -93,61 +94,80 @@ export default class accelero extends React.Component {
 
 	render () {
 		return (
-			<View style={styles.container}>
-				<View srtle={styles.container} >
-					<Text style={styles.text}> 
-						console: {this.state.console}
-					</Text>
+	    <View style={styles.container}>
+	      <View style={styles.container2}>
+	      	<Text> {this.state.console} </Text>
+		      <Image source={Logo} alt="Logo" style={styles.image} />
+		      <View style={styles.titre}>
+		      	<Text style={styles.titre}>Hang-Up</Text>
+		      </View>
+		      <View style={styles.bouton}>
 
-					{ this.state.gameState == 0 && 
-						<Button title="Ready To Play" onPress={ () => this.onPress() } />
-					}
-
-					<Text style={styles.text}>
-						{this.state.string}
-				 </Text>
-				</View>
-			</View>
+		      { this.state.gameState == 0 && 
+		      	<Button 
+			      	style={styles.bouton} 
+			      	onPress={ () => this.onPress() }
+			      	title="Lancer une partie" 
+		      	/>
+		      }
+		      </View>
+	      </View>
+	    </View>
 		);
 	}
-
 }
-
-// function round(n) {
-//   if (!n) {
-//     return 0;
-//   }
-//   return Math.floor(n * 100) / 100;
-// }
 
 
 
 
 const styles = StyleSheet.create({
-	container: {
-		flex: 1,
-		justifyContent: 'center',
-		paddingHorizontal: 10,
-	},
-	text: {
-		textAlign: 'center',
-		fontSize: 30,
-	},
-	buttonContainer: {
-		flexDirection: 'row',
-		alignItems: 'stretch',
-		marginTop: 15,
-	},
-	button: {
-		flex: 1,
-		justifyContent: 'center',
-		alignItems: 'center',
-		backgroundColor: '#eee',
-		padding: 10,
-	},
-	middleButton: {
-		borderLeftWidth: 1,
-		borderRightWidth: 1,
-		borderColor: '#ccc',
-	},
+  container: {
+
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#2D4475', 
+  },
+
+  image: {
+    width: 300,
+    height: 300,
+    marginTop: 30,
+  },
+
+  container2: {
+    backgroundColor: '#FAF0EF',
+    borderBottomLeftRadius: 20,
+    borderBottomRightRadius: 20,
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+    width: 350,
+    height: 640,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+
+  bouton: {
+    
+    backgroundColor: '#2D4475',
+    borderBottomLeftRadius: 20,
+    borderBottomRightRadius: 20,
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+    marginTop: 30,
+    width: 200,
+    height: 40,
+    textAlign: 'center',
+    justifyContent: 'center',
+  },
+
+  titre: {
+    //fontFamily: 'Montserrat',
+    fontWeight: '700',
+    width: 120,
+    height: 50,
+    fontSize: 24,
+    textAlign: 'center',
+    justifyContent: 'center',
+  }
 });

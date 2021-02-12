@@ -1,14 +1,14 @@
 import { StatusBar } from 'expo-status-bar';
-import React from 'react';
-import { StyleSheet, View } from 'react-native';
+import React, { cloneElement } from 'react';
+import { StyleSheet, View, Image, Button, Text } from 'react-native';
 import Accelerometer from './src/components/Accelerometer';
 import Timer from './src/components/Timer';
+import Logo from './assets/image1.png'
 
 export default function App() {
   return (
     <View style={styles.container}>
       <Accelerometer/>
-      <StatusBar style="auto" />
     </View>
   );
 }
@@ -16,8 +16,8 @@ export default function App() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
     alignItems: 'center',
     justifyContent: 'center',
+    backgroundColor: '#2D4475', 
   },
 });

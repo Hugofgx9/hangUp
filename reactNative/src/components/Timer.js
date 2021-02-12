@@ -17,6 +17,7 @@ function timer() {
   counter++;
   if (counter == 1) {
     date1 = Date.now();
+    
   }
   else {
     var gap = Date.now()-date1
