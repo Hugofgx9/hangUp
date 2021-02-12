@@ -7,19 +7,16 @@ import Logo from '../../assets/image1.png';
 export default class accelero extends React.Component {
 
 	state = {
-		string: '',
 		console: 'init',
 		gameState: 0,
 	};
 
-	onPress() {
-		this.socket.emit ('player-ready');
-	}
-
-	startGame() {
-		this.date1 = Date.now();
-		this.setState({ gameState: 1});
-	}
+	/**
+	 * Explain gameState
+	 * gameState = 0 --> the user can press the btn and wait other player to be ready
+	 * gameState = 1 --> the phone vibrate ad user can take his phone
+	 * gameState = 2 --> the user took his phone and has his result
+	 */
 
 	componentWillUnmount() {
 		this._unsubscribeFromAccelerometer();
@@ -31,63 +28,108 @@ export default class accelero extends React.Component {
 		this._subscribeToAccelerometer();
 	}
 
+	//when press on btn
+	onPressHandle() {
+		this.socket.emit ('player-ready');
+	}
+
+	startVibration() {
+		this.date1 = Date.now();
+		this.setState({ gameState: 1});
+		this.setConsole('vibre');
+		Vibration.vibrate();
+	}
+
 	socketConnect() {
+		// dev server
 		//this.socket = io('ws://192.168.0.12:3000');
+		// prod server
 		this.socket = io('ws://still-journey-49166.herokuapp.com');
 		this.bindSocket();
 	}
 
+	// listen socket events
 	bindSocket() {  
 		const socket = this.socket;
 
+		// connected to server
 		socket.on('connected', () => this.setConsole('connected on socket'));
 		
+		// game start
 		socket.on('game-start', delay => {
+			this.setConsole('GAME START');
 			setTimeout( () => {
-				Vibration.vibrate();
-				this.startGame();
-				this.setConsole('vibre');
-
+				this.startVibration();
 			}, delay);
 		})
 
+		// winner or looser event
 		socket.on('result', result => {
 			this.setConsole(result.winner ? 'tu as gagné' : 'tu as perdu');
 		});
 
+		// if u want you can restart 
 		socket.on('can-play-again', () => {
-			this.setConsole('can-play-again');
+			this.setConsole('Press btn to play again');
 			this.setState({ gameState: 0});
 		}); 
 	}
 
+	//set console state, which is in the new viewport
 	setConsole(str) {
 		this.setState({
 			console: str,
 		});
 	}
 
+	//active accelerometer
 	_subscribeToAccelerometer() {
-
 		let value;
 		let prevValue;
 
+		//check if accelerometer of device is accessible
 		Accelerometer.isAvailableAsync()
 		.then(
 			result => {
+				//listen accelerometer, param{x ,y, z}
 				Accelerometer.addListener( a => {
+
+					//acceleration |value|
 					let value = Math.abs(a.x + a.y + a.z);
-					if (prevValue && this.state.gameState == 1 && Math.abs(value - prevValue) > 0.2) {
+
+					/**
+					 * better multiples conditions syntax
+					 *
+					 * cond1: necessary to cond3
+					 * cond2:	game start
+					 * cond3: check if there is a gap between 
+					 * the previous accelero value and the current
+					 * because accelero meter as alway a value which depend 
+					 * of the earth movement (in Bordeaux altitude 0m, accelero ~ 0.9)	
+					 */
+					const conditionsArray = [
+						prevValue != undefined,
+						this.state.gameState == 1,
+						Math.abs(value - prevValue) > 0.2
+					]
+
+					// what a beautiful multiple conditions syntax 
+					// instead of if ( prevValue && this.state.gameState == 1 && Math.abs(value - prevValue) > 0.2 )
+					// which one is you favorite ? 
+					// ES6 lover <3
+					if (!conditionsArray.includes(false)) {
 						let gap = Date.now() - this.date1; 
-						this.setState({string: gap, gameState: 2});
+						this.setState({gameState: 2});
 						this.socket.emit('result', gap);
 					}
+
 					prevValue = value;
 				});
 			}, error => console.log('Accelerometer dont work')
 		)
 	};
 
+	//acceleroEvents
 	_unsubscribeFromAccelerometer() {
 		Accelerometer.removeAllListeners();
 	};
@@ -106,7 +148,7 @@ export default class accelero extends React.Component {
 		      { this.state.gameState == 0 && 
 		      	<Button 
 			      	style={styles.bouton} 
-			      	onPress={ () => this.onPress() }
+			      	onPress={ () => this.onPressHandle() }
 			      	title="Lancer une partie" 
 		      	/>
 		      }
