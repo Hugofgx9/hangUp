@@ -13,13 +13,12 @@
 </body>
 <script src="/socket.io/socket.io.js"></script>
 <script type="text/javascript">
-	let socket = io('localhost:3000');
+	let socket = io('still-journey-49166.herokuapp.com');
+
 	let time1 = 0;
 
-	socket.on('game-ready', () => {
-		console.log('gametart')
-		document.querySelector('.vibre').style.backgroundColor = 'white';
-	});
+
+	socket.on('game-ready', () => console.log('gametart'));
 
 	document.querySelector('button.ready').addEventListener('click',() => {
 		socket.emit('player-ready');

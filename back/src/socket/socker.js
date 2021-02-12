@@ -17,6 +17,11 @@ export default function socker(server) {
 
 		room.addUser(socket);
 
+    socket.on('disconnect', socket => {
+      console.log('disconnet');
+      room.userDisconnect(socket);
+    })
+
 	});
 
 }

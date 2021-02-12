@@ -7,6 +7,8 @@ export default class accelero extends React.Component {
 
 	state = {
 		string: '',
+		console: '',
+		statue: '',
 	};
 
 	onPress() {
@@ -24,35 +26,44 @@ export default class accelero extends React.Component {
 
 	componentDidMount() {
 		this.date1 = 0;
-		this.startGame();
-		this._subscribeToAccelerometer();
 		this.socketConnect();
+		this._subscribeToAccelerometer();
 	}
 
 	socketConnect() {
-		this.socket = io('ws://192.168.0.12:3000');
+		//this.socket = io('ws://192.168.0.12:3000');
+		this.socket = io('ws://still-journey-49166.herokuapp.com');
 		this.bindSocket();
 	}
 
 	bindSocket() {  
 		const socket = this.socket;
 
-		socket.on('connected', () => console.log('connected on socket'));
+		socket.on('connected', () => this.setConsole('connected on socket'));
 
-		socket.on('game-ready', () => console.log('game-ready'));
+		socket.on('game-ready', () => this.setConsole('game-ready'));
 
 		socket.on('game-start', delay => {
-			console.log('delay', delay);
 			setTimeout( () => {
 				Vibration.vibrate();
-				this.date1 = Date.now();
-				console.log('vibre');
+				this.startGame();
+				this.setConsole('vibre');
 
 			}, delay);
 		})
 
 		socket.on('result', result => {
-			console.log(`winner: ${result.winner}, rank:  ${result.rank}`)
+			this.setConsole(result.winner ? 'tu as gagné' : 'tu as perdu');
+		});
+	}
+
+	setSatue(){
+
+	}
+
+	setConsole(str) {
+		this.setState({
+			console: str,
 		});
 	}
 
@@ -61,12 +72,11 @@ export default class accelero extends React.Component {
 		let value;
 		let prevValue;
 
-		Accelerometer.isAvailableAsync()
+		Accelerometer.isAvailableAsync();
 		.then(
 			result => {
 				Accelerometer.addListener( a => {
 					let value = Math.abs(a.x + a.y + a.z);
-
 					if (prevValue && this.gameIN == true && Math.abs(value - prevValue) > 0.2) {
 						let gap = Date.now() - this.date1; 
 						this.setState({
@@ -90,9 +100,9 @@ export default class accelero extends React.Component {
 			<View style={styles.container}>
 				<View srtle={styles.container} >
 					<Text style={styles.text}> 
-						{}
+						console: {this.state.console}
 					</Text>
-					<Button title="Press me" onPress={ () => this.onPress() } />
+					<Button title="Ready To Play" onPress={ () => this.onPress() } />
 					<Text style={styles.text}>
 						time: {this.state.string}
 				 </Text>
@@ -121,7 +131,7 @@ const styles = StyleSheet.create({
 	},
 	text: {
 		textAlign: 'center',
-		fontSize: 50,
+		fontSize: 30,
 	},
 	buttonContainer: {
 		flexDirection: 'row',
