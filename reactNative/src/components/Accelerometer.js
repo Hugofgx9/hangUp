@@ -72,7 +72,7 @@ export default class accelero extends React.Component {
 		let value;
 		let prevValue;
 
-		Accelerometer.isAvailableAsync();
+		Accelerometer.isAvailableAsync()
 		.then(
 			result => {
 				Accelerometer.addListener( a => {
