@@ -8,7 +8,7 @@ export default class accelero extends React.Component {
 	state = {
 		string: '',
 		console: '',
-		statue: '',
+		gameState: 0,
 	};
 
 	onPress() {
@@ -17,7 +17,7 @@ export default class accelero extends React.Component {
 
 	startGame() {
 		this.date1 = Date.now();
-		this.gameIN = true;
+		this.setState({ gameState: 1});
 	}
 
 	componentWillUnmount() {
@@ -31,8 +31,8 @@ export default class accelero extends React.Component {
 	}
 
 	socketConnect() {
-		//this.socket = io('ws://192.168.0.12:3000');
-		this.socket = io('ws://still-journey-49166.herokuapp.com');
+		this.socket = io('ws://192.168.0.12:3000');
+		//this.socket = io('ws://still-journey-49166.herokuapp.com');
 		this.bindSocket();
 	}
 
@@ -40,9 +40,7 @@ export default class accelero extends React.Component {
 		const socket = this.socket;
 
 		socket.on('connected', () => this.setConsole('connected on socket'));
-
-		socket.on('game-ready', () => this.setConsole('game-ready'));
-
+		
 		socket.on('game-start', delay => {
 			setTimeout( () => {
 				Vibration.vibrate();
@@ -55,10 +53,11 @@ export default class accelero extends React.Component {
 		socket.on('result', result => {
 			this.setConsole(result.winner ? 'tu as gagné' : 'tu as perdu');
 		});
-	}
 
-	setSatue(){
-
+		socket.on('can-play-again', () => {
+			this.setConsole('can-play-again');
+			this.setState({ gameState: 0});
+		}); 
 	}
 
 	setConsole(str) {
@@ -72,18 +71,15 @@ export default class accelero extends React.Component {
 		let value;
 		let prevValue;
 
-		Accelerometer.isAvailableAsync();
+		Accelerometer.isAvailableAsync()
 		.then(
 			result => {
 				Accelerometer.addListener( a => {
 					let value = Math.abs(a.x + a.y + a.z);
-					if (prevValue && this.gameIN == true && Math.abs(value - prevValue) > 0.2) {
+					if (prevValue && this.state.gameState == 1 && Math.abs(value - prevValue) > 0.2) {
 						let gap = Date.now() - this.date1; 
-						this.setState({
-							string: gap,
-						});
+						this.setState({string: gap, gameState: 2});
 						this.socket.emit('result', gap);
-						this.gameIN = false;
 					}
 					prevValue = value;
 				});
@@ -102,9 +98,13 @@ export default class accelero extends React.Component {
 					<Text style={styles.text}> 
 						console: {this.state.console}
 					</Text>
-					<Button title="Ready To Play" onPress={ () => this.onPress() } />
+
+					{ this.state.gameState == 0 && 
+						<Button title="Ready To Play" onPress={ () => this.onPress() } />
+					}
+
 					<Text style={styles.text}>
-						time: {this.state.string}
+						{this.state.string}
 				 </Text>
 				</View>
 			</View>

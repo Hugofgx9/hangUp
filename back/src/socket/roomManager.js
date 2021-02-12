@@ -1,8 +1,9 @@
 export default class Room {
 	constructor(opts = { io }) {
-		this.io = opts.io;
+		this.io = opts.io;;
 		this.roomID = 'first-room';
 		this.players = [];
+		this.gameIN = false;
 	}
 
 	/**
@@ -11,14 +12,15 @@ export default class Room {
 	init() {
 		this.players.forEach( player => {
 			player.isReady = false;
-			player.socket.removeAllListeners();
+			//player.socket.removeAllListeners();
 		});
+		console.log('ready to play new game');
 	}
 
 	/**
 	 * Add a user to se current room
-	 * and start the game if there is 2 users
-	 * @param {object} socket
+	 * and start the game if there is 2 users or more
+	 * @param {sokcet}
 	 */
 	addUser(socket) {
 		socket.join(this.roomID);
@@ -26,7 +28,7 @@ export default class Room {
 
 		console.log(this.players.length, 'players in the room');
 
-		if (this.players.length >= 2) this.gameIsReady();
+		if (this.players.length >= 2 && this.gameIN == false) this.gameIsReady();
 	}
 
 	/**
@@ -34,6 +36,7 @@ export default class Room {
 	 * event from each player and then call begin method
 	 */
 	gameIsReady() {
+		this.gameIN == true;
 		console.log('new game ready in', this.roomID);
 		this.io.to(this.roomID).emit('game-ready');
 
@@ -42,12 +45,14 @@ export default class Room {
 				player.isReady = true;
 				console.log(`player ${player.id} is ready`);
 
+				// true if allplayer are ready
 				const arePlayersReady = this.players.every(player => player.isReady === true);
 				if (arePlayersReady) {
-					console.log('players are ready');
+					console.log('all players are ready');
 					this.gameStart();
 				} else {
-					console.log('only one player is ready');
+					let nbReady = this.players.filter(player => player.isReady === true).length;
+					console.log(`${nbReady} player ready`);
 				}
 			});
 		});
@@ -58,13 +63,15 @@ export default class Room {
 		let delay = 1 + Math.random() * 4 * 1000;
 		this.io.to(this.roomID).emit('game-start', delay);
 
+		this.gamePlayers = [...this.players];
 		let results = [];
-		this.players.forEach( player => {
+
+		this.gamePlayers.forEach( player => {
 			player.socket.on('result', a => {
 				console.log(`player ${player.id} did ${a}`);
 				results.push({delay: a, id: player.id});
 
-				if (results.length == players.length) {
+				if (results.length == this.gamePlayers.length) {
 					console.log('get the results of all players');
 					this.sortResult(results);
 				} else {
@@ -75,9 +82,8 @@ export default class Room {
 	}
 
 	/**
-	 * [setResult description]
-	 * @param {[{delay, id}]}
 	 * Sort the results
+	 * @param {[{delay, id}]}
 	 */
 	sortResult(results) {
 
@@ -91,15 +97,14 @@ export default class Room {
 
 
 	/**
-	 * [setResult description]
-	 * @param {[{delay, id}]} sorted
 	 * Sort the results and send to user they score
 	 * and enable new game
+	 * @param {[{delay, id}]} sorted
 	 */
 	
 	sendResult(results) {
 		results.forEach( (result, index) => {
-			let player = this.players[this.players.findIndex(player => player.id == result.id)];
+			let player = this.gamePlayers[this.gamePlayers.findIndex(player => player.id == result.id)];
 			let winner = index == 0 ? true : false;
 			player.socket.emit('result', {rank: index + 1, winner} );
 			console.log(`player ${player.id} ${winner ? 'winner' :'loser'}`)
@@ -107,9 +112,13 @@ export default class Room {
 		setTimeout( () => {
 			this.init();
 		}, 2000);
-
 	}
 
+
+	/**
+	 * Remove user from room when disconnect
+	 * @param  {socket}
+	 */
 	userDisconnect(socket) {
 		this.players.splice( this.players.findIndex(player => player.id === socket.id),1);
 		console.log(this.players.length, 'players in the room');
